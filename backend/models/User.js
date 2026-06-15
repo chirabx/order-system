@@ -15,8 +15,20 @@ const UserSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-UserSchema.index({ role: 1, phone: 1 }, { unique: true, sparse: true });
-UserSchema.index({ role: 1, account: 1 }, { unique: true, sparse: true });
+UserSchema.index(
+  { role: 1, phone: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { phone: { $type: "string" } }
+  }
+);
+UserSchema.index(
+  { role: 1, account: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { account: { $type: "string" } }
+  }
+);
 
 UserSchema.virtual("password").set(function setPassword(password) {
   this._password = password;

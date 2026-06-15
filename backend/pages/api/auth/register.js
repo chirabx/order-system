@@ -17,15 +17,21 @@ export default asyncHandler(async function register(req, res) {
   const exists = await User.findOne(role === "customer" ? { role, phone } : { role, account });
   if (exists) return fail(res, "Account already exists", 409);
 
-  const user = new User({
-    role,
-    name,
-    phone: role === "customer" ? phone : undefined,
-    account: role === "staff" ? account : undefined,
-    staffNo,
-    password
-  });
-  await user.save();
+  let user;
+  try {
+    user = new User({
+      role,
+      name,
+      phone: role === "customer" ? phone : undefined,
+      account: role === "staff" ? account : undefined,
+      staffNo,
+      password
+    });
+    await user.save();
+  } catch (error) {
+    if (error.code === 11000) return fail(res, "Account already exists", 409);
+    throw error;
+  }
 
   const token = signToken(user);
   return ok(res, { token, user: sanitizeUser(user) }, "Registered", 201);
