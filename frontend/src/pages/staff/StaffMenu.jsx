@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { Plus, Save, Tag, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 import { api } from "../../lib/api.js";
 import Skeleton from "../../components/Skeleton.jsx";
@@ -201,16 +202,21 @@ export default function StaffMenu() {
             <button className="btn-primary shrink-0" type="submit"><Plus size={17} />新增</button>
           </form>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {categories.map((category) => (
+        <div className="mt-4 flex min-h-10 flex-wrap gap-2">
+          {loading ? (
+            Array.from({ length: 4 }).map((_, index) => <Skeleton key={index} className="h-10 w-28 rounded-md" />)
+          ) : categories.length ? (
+            categories.map((category) => (
               <div key={category._id} className="inline-flex items-center gap-2 rounded-md border border-stone-200 px-3 py-2 dark:border-slate-800">
                 <span className="text-sm font-semibold">{category.name}</span>
                 <button type="button" className="btn-secondary h-8 w-8 p-0 text-rose-600" onClick={() => deleteCategory(category)} title="删除分类">
                   <Trash2 size={15} />
                 </button>
               </div>
-          ))}
-          {!categories.length && <p className="text-sm text-stone-500 dark:text-slate-400">暂无分类。</p>}
+            ))
+          ) : (
+            <p className="text-sm text-stone-500 dark:text-slate-400">暂无分类。</p>
+          )}
         </div>
       </section>
 
@@ -270,7 +276,7 @@ export default function StaffMenu() {
         </section>
       </div>
 
-      <AnimatePresence>
+      {createPortal(<AnimatePresence>
         {editing && (
           <motion.div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/45 p-4" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <motion.section
@@ -300,7 +306,7 @@ export default function StaffMenu() {
             </motion.section>
           </motion.div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>, document.body)}
     </div>
   );
 }
