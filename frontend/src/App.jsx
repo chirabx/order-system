@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Shell from "./components/Shell.jsx";
 import Login from "./pages/Login.jsx";
@@ -18,16 +17,9 @@ import Skeleton from "./components/Skeleton.jsx";
 
 function Page({ children }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, clipPath: "inset(0 0 100% 0)" }}
-      animate={{ opacity: 1, clipPath: "inset(0 0 0% 0)" }}
-      exit={{ opacity: 0, clipPath: "inset(100% 0 0 0)" }}
-      transition={{ duration: 0.32, ease: "easeOut" }}
-      style={{ transformOrigin: "top" }}
-      className="min-h-[calc(100vh-96px)]"
-    >
+    <div className="min-h-[calc(100vh-96px)]">
       {children}
-    </motion.div>
+    </div>
   );
 }
 

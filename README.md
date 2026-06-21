@@ -1,70 +1,250 @@
-# 餐饮订单管理系统
+- ```
+  # 餐饮订单管理系统项目文档
 
-本目录按提示词拆分为两个项目：
+  ## 一、需求分析
 
-- `frontend`：Vite + React + React Router v6 + Tailwind CSS + Framer Motion
-- `backend`：Next.js API Routes + MongoDB + Mongoose + SSE
+  本作品面向中小型餐饮门店，解决传统点餐中菜单更新慢、人工传单易出错、订单状态不同步、桌位协作不便等问题。系统对标常见扫码点餐和餐厅后台管理系统，提供顾客扫码点餐、购物车协同、订单提交、员工接单处理、菜单维护、桌位管理、评论反馈等功能。
 
-## 运行方式
+  | 维度 | 本系统 | 常见扫码点餐系统 |
+  |---|---|---|
+  | 使用对象 | 顾客、餐厅员工 | 顾客、商家 |
+  | 点餐方式 | 扫码进入桌位点餐 | 扫码点餐 |
+  | 实时协同 | 支持 SSE 同步购物车和订单 | 通常支持 |
+  | 后台管理 | 菜单、桌位、订单、评论 | 较完整 |
+  | 部署成本 | 本地/私有化部署，成本低 | 多为平台化服务 |
+  | 可扩展性 | 前后端分离，模块清晰 | 依赖平台能力 |
 
-1. 启动 MongoDB，并在 `backend/.env.local` 中配置：
+  主要性能目标：页面响应流畅，订单状态实时更新；账号鉴权安全可靠；菜单、订单、桌位等核心数据持久化存储；系统便于部署、维护和后续扩展。
 
-```env
-MONGODB_URI=mongodb://127.0.0.1:27017/order-system
-JWT_SECRET=replace-with-a-long-random-secret
-NEXT_PUBLIC_API_URL=http://localhost:4000
-```
+  ## 二、概要设计
 
-2. 后端：
+  系统采用前后端分离架构。前端使用 React、React Router、Tailwind CSS、Framer Motion 构建页面；后端使用 Next.js API Routes 提供接口；数据库使用 MongoDB，并通过 Mongoose 建模；实时通信使用 SSE。
 
-```bash
-cd backend
-npm install
-npm run dev
-```
+  ​```mermaid
+  flowchart TD
+      A["顾客端"] --> B["登录/注册"]
+      A --> C["扫码点餐"]
+      A --> D["购物车"]
+      A --> E["订单状态"]
+      A --> F["评论反馈"]
 
-默认端口：`http://localhost:4000`
+      G["员工端"] --> H["工作台"]
+      G --> I["订单管理"]
+      G --> J["菜单管理"]
+      G --> K["桌位管理"]
+      G --> L["评论查看"]
 
-3. 前端：
+      B --> M["后端 API"]
+      C --> M
+      D --> M
+      E --> M
+      H --> M
+      I --> M
+      J --> M
+      K --> M
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+      M --> N["MongoDB"]
+      M --> O["SSE 实时事件"]
+      O --> A
+      O --> G
+  ```
 
-默认端口：`http://localhost:3000`
+  ### 模块划分
 
-## 已实现功能
+  | 模块         | 主要功能                                    |
+  | ------------ | ------------------------------------------- |
+  | 用户认证模块 | 顾客手机号注册/登录，员工账号登录，JWT 鉴权 |
+  | 菜单模块     | 菜品分类、菜品列表、新增编辑、上下架        |
+  | 桌位模块     | 桌位创建、二维码 token、桌位状态            |
+  | 购物车模块   | 按桌位和用户隔离，支持增删改查              |
+  | 订单模块     | 下单、订单列表、状态流转、厨房/员工处理     |
+  | 评论模块     | 顾客评分评论，员工查看反馈                  |
+  | 实时通信模块 | 使用 SSE 推送购物车和订单变化               |
 
-- 用户认证：顾客手机号注册/登录，员工账号注册/登录，密码使用 `bcryptjs` 哈希和校验，JWT 鉴权。
-- 用户资料：头像 base64 上传、简介编辑、密码修改。
-- 菜单：分类列表、菜品列表、员工新增/编辑/上下架。
-- 桌位：员工批量生成桌位和二维码 token，顾客可通过 `/scan/:tableId` 进入点餐。
-- 购物车：按桌位和顾客隔离，支持添加、修改、删除，聚合同桌购物车。
-- 多人协同：`/api/events?room=table-{tableId}` 和 `/api/events?room=staff` 使用 SSE 广播购物车与订单消息。
-- 订单：顾客下单，员工查看、筛选、推进状态，状态流转为 `pending -> confirmed -> preparing -> ready -> completed`，支持 `cancelled`。
-- 前端体验：浅色/深色主题持久化、全局 toast、页面切换动画、响应式布局。
+  ## 三、详细设计
 
-## 关键 API
+  ### 1. 界面设计
 
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `GET/PUT /api/auth/profile`
-- `GET /api/menu/categories`
-- `GET/POST /api/menu/items`
-- `PUT /api/menu/items/[id]`
-- `PATCH /api/menu/items/[id]/available`
-- `GET/POST /api/tables`
-- `GET /api/tables/[tableId]`
-- `GET /api/cart?tableId=xxx`
-- `POST /api/cart/add`
-- `PUT /api/cart/update`
-- `DELETE /api/cart/remove`
-- `GET /api/events?room=table-{tableId}`
-- `GET /api/events?room=staff`
-- `POST /api/orders`
-- `GET /api/orders`
-- `GET /api/orders/[id]`
-- `PATCH /api/orders/[id]/status`
-- `GET /api/kitchen/orders`
+  系统包含顾客端和员工端两类界面。
+
+  | 页面        | 说明                                     |
+  | ----------- | ---------------------------------------- |
+  | 登录/注册页 | 根据角色切换顾客或员工登录方式           |
+  | 顾客点餐页  | 展示菜品分类、菜品列表、购物车、下单入口 |
+  | 顾客订单页  | 查看历史订单和订单状态                   |
+  | 员工工作台  | 汇总订单、桌位、菜单等运营信息           |
+  | 员工订单页  | 筛选订单并推进状态                       |
+  | 员工菜单页  | 新增、编辑、上下架菜品                   |
+  | 员工桌位页  | 生成桌位和扫码入口                       |
+  | 评论页      | 顾客提交评论，员工查看反馈               |
+
+  典型流程：
+
+  ```
+  ​```mermaid
+  sequenceDiagram
+      participant C as 顾客
+      participant F as 前端
+      participant B as 后端API
+      participant DB as MongoDB
+      participant S as SSE
+
+      C->>F: 扫码进入桌位
+      F->>B: 查询桌位和菜单
+      B->>DB: 读取 Table/MenuItem
+      DB-->>B: 返回数据
+      B-->>F: 展示菜单
+      C->>F: 添加购物车并下单
+      F->>B: 提交订单
+      B->>DB: 写入 Order
+      B->>S: 推送订单事件
+      S-->>F: 员工端实时更新
+  ​```
+  ```
+
+  ### 2. 数据库设计
+
+  系统使用 MongoDB，主要集合如下：
+
+  | 集合         | 关键字段                                                 | 说明                          |
+  | ------------ | -------------------------------------------------------- | ----------------------------- |
+  | User         | name, phone, account, passwordHash, role, avatarUrl, bio | 用户信息，区分 customer/staff |
+  | MenuCategory | name, sort                                               | 菜品分类                      |
+  | MenuItem     | name, price, category, stock, sold, available, tags      | 菜品信息                      |
+  | Table        | number, token, accessCode, capacityGroup, status         | 桌位和扫码访问标识            |
+  | Cart         | table, customer, guest, items                            | 购物车，按桌位和用户隔离      |
+  | Order        | orderNo, table, customer, items, totalAmount, status     | 订单主体                      |
+  | Comment      | user, rating, content, tags, hidden                      | 用户评价                      |
+  | Reservation  | customer, name, phone, partySize, status                 | 预约信息                      |
+
+  ```
+  ​```mermaid
+  erDiagram
+      User ||--o{ Cart : owns
+      User ||--o{ Order : places
+      User ||--o{ Comment : writes
+      Table ||--o{ Cart : contains
+      Table ||--o{ Order : receives
+      MenuCategory ||--o{ MenuItem : classifies
+      MenuItem ||--o{ Cart : selected
+      MenuItem ||--o{ Order : ordered
+  ​```
+  ```
+
+  订单状态流转：
+
+  ```
+  ​```mermaid
+  stateDiagram-v2
+      [*] --> pending
+      pending --> confirmed
+      confirmed --> preparing
+      preparing --> ready
+      ready --> completed
+      pending --> cancelled
+  ​```
+  ```
+
+  ### 3. 关键技术
+
+  | 技术点        | 设计说明                                      |
+  | ------------- | --------------------------------------------- |
+  | JWT 鉴权      | 登录后签发 token，接口通过 token 判断用户身份 |
+  | bcryptjs      | 密码加盐哈希存储，不保存明文密码              |
+  | Mongoose 索引 | 对用户账号、订单状态、桌位状态等字段建立索引  |
+  | SSE 实时推送  | 购物车和订单变化后推送到顾客端、员工端        |
+  | 前后端分离    | 前端专注交互展示，后端负责数据和业务规则      |
+  | 响应式界面    | 使用 Tailwind CSS 适配桌面和移动端            |
+
+  ## 四、测试报告
+
+  ### 主要测试用例
+
+  | 测试项       | 测试过程                               | 预期结果             | 结果 |
+  | ------------ | -------------------------------------- | -------------------- | ---- |
+  | 顾客注册登录 | 输入手机号、密码注册并登录             | 成功进入顾客首页     | 通过 |
+  | 员工登录     | 使用员工账号登录                       | 成功进入员工工作台   | 通过 |
+  | 菜品管理     | 新增、编辑、上下架菜品                 | 菜品列表正确更新     | 通过 |
+  | 扫码点餐     | 通过桌位入口进入点餐页                 | 正确绑定桌位         | 通过 |
+  | 购物车操作   | 添加、修改数量、删除菜品               | 金额和数量正确变化   | 通过 |
+  | 顾客下单     | 提交购物车                             | 生成订单并清空购物车 | 通过 |
+  | 员工处理订单 | 推进订单状态                           | 状态按流程变化       | 通过 |
+  | 评论功能     | 提交评分和文字评论                     | 评论列表显示         | 通过 |
+  | 前端构建     | 执行 `npm --prefix frontend run build` | 构建成功             | 通过 |
+
+  ### 技术指标
+
+  | 指标       | 说明                                           |
+  | ---------- | ---------------------------------------------- |
+  | 运行速度   | 前端生产构建通过，主资源体积较小，页面切换流畅 |
+  | 安全性     | JWT 鉴权、密码哈希、接口按角色控制访问         |
+  | 可用性     | 支持顾客端和员工端完整闭环流程                 |
+  | 扩展性     | 模块边界清晰，可继续扩展支付、优惠券、库存预警 |
+  | 部署方便性 | 前后端均使用 npm 脚本启动，MongoDB 配置简单    |
+  | 实时性     | 使用 SSE 实现订单和购物车变化推送              |
+
+  ## 五、安装及使用
+
+  ### 环境要求
+
+  - Node.js
+  - npm
+  - MongoDB
+
+  ### 后端启动
+
+  ```
+  cd backend
+  npm install
+  ```
+
+  创建 `backend/.env.local`：
+
+  ```
+  MONGODB_URI=mongodb://127.0.0.1:27017/order-system
+  JWT_SECRET=replace-with-a-long-random-secret
+  NEXT_PUBLIC_API_URL=http://localhost:4000
+  ```
+
+  启动后端：
+
+  ```
+  npm run dev
+  ```
+
+  默认地址：
+
+  ```
+  http://localhost:4000
+  ```
+
+  ### 前端启动
+
+  ```
+  cd frontend
+  npm install
+  npm run dev
+  ```
+
+  默认地址：
+
+  ```
+  http://localhost:3000
+  ```
+
+  ### 典型使用流程
+
+  1. 顾客注册或登录账号。
+  2. 顾客扫码进入对应桌位。
+  3. 浏览菜单，将菜品加入购物车。
+  4. 提交订单并查看订单状态。
+  5. 员工登录后台，查看新订单。
+  6. 员工推进订单状态：待确认、制作中、待取餐、已完成。
+  7. 顾客完成用餐后提交评论反馈。
+
+  ## 六、项目总结
+
+  本项目围绕餐饮点单场景完成了从顾客下单到员工处理的核心业务闭环。开发过程中重点解决了用户角色区分、桌位绑定、购物车隔离、订单状态流转和实时同步等问题。通过前后端分离设计，系统结构较清晰，后续可以较方便地加入在线支付、优惠券、库存预警、数据统计、厨房大屏和多门店管理等功能。
+
+  本项目提升了对 React 单页应用、REST API、MongoDB 数据建模、JWT 鉴权和 SSE 实时通信的综合实践能力，也体现了数据库课程中数据设计、关系建模、索引优化和业务流程抽象的应用价值。
+  \```
