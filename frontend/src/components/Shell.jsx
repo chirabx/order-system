@@ -22,14 +22,18 @@ export default function Shell({ children }) {
   const isStaff = user?.role === "staff";
   const navItems = isStaff
     ? [
-        ["工作台", "/staff/dashboard"],
-        ["订单", "/staff/orders"],
-        ["桌位", "/staff/tables"],
-        ["菜单", "/staff/menu"],
-        ["评论", "/comments"]
+        { label: "工作台", to: "/staff/dashboard" },
+        { label: "订单", to: "/staff/orders" },
+        { label: "桌位", to: "/staff/tables" },
+        { label: "菜单", to: "/staff/menu" },
+        { label: "评论", to: "/comments" }
       ]
     : user
-      ? [["就餐", "/customer"], ["订单", "/customer/orders"], ["评论", "/comments"]]
+      ? [
+          { label: "就餐", to: "/customer", end: true },
+          { label: "订单", to: "/customer/orders" },
+          { label: "评论", to: "/comments" }
+        ]
       : [];
 
   const handleLogout = () => {
@@ -45,10 +49,11 @@ export default function Shell({ children }) {
             餐饮订单系统
           </Link>
           <nav className="hidden items-center justify-center gap-2 md:flex">
-            {navItems.map(([label, to]) => (
+            {navItems.map(({ label, to, end }) => (
               <NavLink
                 key={to}
                 to={to}
+                end={end}
                 className={({ isActive }) =>
                   `inline-flex w-20 justify-center rounded-md px-3 py-2 text-sm font-semibold transition-colors ${
                     isActive ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-200" : "text-stone-600 hover:text-emerald-700 dark:text-slate-300"
@@ -82,7 +87,7 @@ export default function Shell({ children }) {
         {open && (
           <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} className="border-t border-stone-200 px-4 py-3 md:hidden dark:border-slate-800">
             <div className="flex flex-col gap-2">
-              {navItems.map(([label, to]) => <Link key={to} to={to} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 font-semibold">{label}</Link>)}
+              {navItems.map(({ label, to }) => <Link key={to} to={to} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 font-semibold">{label}</Link>)}
               {user && <Link to={isStaff ? "/staff/profile" : "/profile"} onClick={() => setOpen(false)} className="rounded-md px-3 py-2 font-semibold">个人资料</Link>}
               {user && <button onClick={handleLogout} className="text-left rounded-md px-3 py-2 font-semibold">退出登录</button>}
             </div>

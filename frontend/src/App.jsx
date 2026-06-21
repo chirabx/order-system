@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Shell from "./components/Shell.jsx";
 import Login from "./pages/Login.jsx";
@@ -57,24 +57,22 @@ export default function App() {
 
   return (
     <Shell>
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<Navigate to={homeFor(user)} replace />} />
-          <Route path="/login" element={<Page><RedirectIfAuthed><Login /></RedirectIfAuthed></Page>} />
-          <Route path="/register" element={<Page><RedirectIfAuthed><Register /></RedirectIfAuthed></Page>} />
-          <Route path="/customer" element={<Page><RequireAuth role="customer"><CustomerHome /></RequireAuth></Page>} />
-          <Route path="/customer/orders" element={<Page><RequireAuth role="customer"><CustomerOrders /></RequireAuth></Page>} />
-          <Route path="/comments" element={<Page><RequireAuth><Comments /></RequireAuth></Page>} />
-          <Route path="/scan/:tableId" element={<Page><ScanOrder /></Page>} />
-          <Route path="/order-status/:orderId" element={<Page><RequireAuth><OrderStatus /></RequireAuth></Page>} />
-          <Route path="/profile" element={<Page><RequireAuth><Profile /></RequireAuth></Page>} />
-          <Route path="/staff/dashboard" element={<Page><RequireAuth role="staff"><StaffDashboard /></RequireAuth></Page>} />
-          <Route path="/staff/orders" element={<Page><RequireAuth role="staff"><StaffOrders /></RequireAuth></Page>} />
-          <Route path="/staff/tables" element={<Page><RequireAuth role="staff"><StaffTables /></RequireAuth></Page>} />
-          <Route path="/staff/menu" element={<Page><RequireAuth role="staff"><StaffMenu /></RequireAuth></Page>} />
-          <Route path="/staff/profile" element={<Page><RequireAuth role="staff"><Profile /></RequireAuth></Page>} />
-        </Routes>
-      </AnimatePresence>
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<Navigate to={homeFor(user)} replace />} />
+        <Route path="/login" element={<Page><RedirectIfAuthed><Login /></RedirectIfAuthed></Page>} />
+        <Route path="/register" element={<Page><RedirectIfAuthed><Register /></RedirectIfAuthed></Page>} />
+        <Route path="/customer" element={<Page><RequireAuth role="customer"><CustomerHome /></RequireAuth></Page>} />
+        <Route path="/customer/orders" element={<Page><RequireAuth role="customer"><CustomerOrders /></RequireAuth></Page>} />
+        <Route path="/comments" element={<Page><RequireAuth><Comments /></RequireAuth></Page>} />
+        <Route path="/scan/:tableId" element={<Page><ScanOrder /></Page>} />
+        <Route path="/order-status/:orderId" element={<Page><RequireAuth><OrderStatus /></RequireAuth></Page>} />
+        <Route path="/profile" element={<Page><RequireAuth><Profile /></RequireAuth></Page>} />
+        <Route path="/staff/dashboard" element={<Page><RequireAuth role="staff"><StaffDashboard /></RequireAuth></Page>} />
+        <Route path="/staff/orders" element={<Page><RequireAuth role="staff"><StaffOrders /></RequireAuth></Page>} />
+        <Route path="/staff/tables" element={<Page><RequireAuth role="staff"><StaffTables /></RequireAuth></Page>} />
+        <Route path="/staff/menu" element={<Page><RequireAuth role="staff"><StaffMenu /></RequireAuth></Page>} />
+        <Route path="/staff/profile" element={<Page><RequireAuth role="staff"><Profile /></RequireAuth></Page>} />
+      </Routes>
     </Shell>
   );
 }

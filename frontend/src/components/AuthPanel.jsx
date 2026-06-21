@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useState } from "react";
 import RoleSwitch from "./RoleSwitch.jsx";
@@ -9,7 +9,6 @@ export default function AuthPanel({ mode }) {
   const [role, setRole] = useState("customer");
   const [values, setValues] = useState({ name: "", phone: "", account: "", staffNo: "", password: "", confirm: "" });
   const { login, register, loading } = useAuth();
-  const navigate = useNavigate();
   const isRegister = mode === "register";
 
   const update = (key) => (event) => setValues((current) => ({ ...current, [key]: event.target.value }));
@@ -29,9 +28,8 @@ export default function AuthPanel({ mode }) {
       staffNo: values.staffNo,
       password: values.password
     };
-    const user = isRegister ? await register(body) : await login(body);
+    await (isRegister ? register(body) : login(body));
     toast.success(isRegister ? "注册成功" : "登录成功");
-    navigate(user.role === "staff" ? "/staff/dashboard" : "/customer", { replace: true });
   }
 
   return (
